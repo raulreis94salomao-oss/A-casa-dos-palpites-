@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Casa dos Palpites — Análise e Prognósticos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F2027;
+    --ink-2:#152C33;
+    --pitch:#1B4332;
+    --pitch-light:#2D6A4F;
+    --chalk:#F4F1E8;
+    --chalk-dim:#B9C4BC;
+    --amber:#E9A23B;
+    --crimson:#C1443C;
+    --line:rgba(244,241,232,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    padding-bottom:80px;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px;}
+
+  /* HERO */
+  header.hero{
+    border-bottom:1px solid var(--line);
+    padding:44px 20px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute;
+    top:-40%;
+    right:-10%;
+    width:420px;height:420px;
+    border:1px solid var(--line);
+    border-radius:50%;
+  }
+  header.hero::after{
+    content:"";
+    position:absolute;
+    top:-40%;
+    right:-10%;
+    width:420px;height:1px;
+    background:var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:clamp(34px,7vw,54px);
+    letter-spacing:.01em;
+    margin-top:10px;
+    line-height:.98;
+  }
+  .hero-sub{
+    max-width:520px;
+    color:var(--chalk-dim);
+    font-size:15px;
+    margin-top:14px;
+  }
+
+  /* LEAGUE TABS */
+  nav.tabs{
+    display:flex;
+    gap:2px;
+    margin-top:28px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  nav.tabs button{
+    flex:1;
+    background:transparent;
+    color:var(--chalk-dim);
+    border:none;
+    font-family:'Oswald',sans-serif;
+    font-size:13px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:13px 6px;
+    cursor:pointer;
+    border-right:1px solid var(--line);
+    transition:background .15s, color .15s;
+  }
+  nav.tabs button:last-child{border-right:none;}
+  nav.tabs button.active{
+    background:var(--pitch);
+    color:var(--chalk);
+  }
+  nav.tabs button:hover:not(.active){color:var(--chalk);background:rgba(244,241,232,0.05);}
+
+  /* SECTIONS */
+  section.league{display:none;padding-top:32px;}
+  section.league.active{display:block;}
+
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--chalk-dim);
+    margin:26px 0 14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-label::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  /* MATCH CARD */
+  .card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:14px;
+    background:linear-gradient(180deg, rgba(244,241,232,0.02), transparent);
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .teams{
+    font-family:'Oswald',sans-serif;
+    font-size:19px;
+    text-transform:uppercase;
+    letter-spacing:.01em;
+  }
+  .teams .vs{color:var(--chalk-dim);font-size:14px;margin:0 8px;font-family:'Inter',sans-serif;}
+  .kickoff{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--chalk-dim);
+    text-transform:uppercase;
+    white-space:nowrap;
+    padding-top:4px;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    padding:4px 9px;
+    border-radius:20px;
+    border:1px solid currentColor;
+    margin-top:10px;
+  }
+  .badge.alta{color:var(--pitch-light);}
+  .badge.media{color:var(--amber);}
+  .badge.baixa{color:var(--crimson);}
+
+  /* PROBABILITY BAR — signature element: pitch halfway-line meter */
+  .meter{
+    margin-top:16px;
+  }
+  .meter-track{
+    position:relative;
+    height:10px;
+    border-radius:6px;
+    overflow:visible;
+    display:flex;
+    background:var(--line);
+  }
+  .meter-seg{height:100%;}
+  .meter-seg.home{background:var(--pitch-light);border-radius:6px 0 0 6px;}
+  .meter-seg.draw{background:var(--amber);}
+  .meter-seg.away{background:var(--crimson);border-radius:0 6px 6px 0;}
+  .meter-ball{
+    position:absolute;
+    top:-5px;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--chalk);
+    border:3px solid var(--ink);
+    box-shadow:0 0 0 1px var(--line);
+    transform:translateX(-50%);
+  }
+  .meter-labels{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--chalk-dim);
+    margin-top:8px;
+  }
+  .meter-labels span b{color:var(--chalk);font-weight:600;}
+
+  .reading{
+    font-size:13.5px;
+    color:var(--chalk-dim);
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px dashed var(--line);
+  }
+  .reading b{color:var(--chalk);font-weight:600;}
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:14px;
+  }
+  .stat-item{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 10px;
+  }
+  .stat-label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--chalk-dim);
+    margin-bottom:5px;
+  }
+  .stat-value{
+    display:block;
+    font-family:'Oswald',sans-serif;
+    font-size:15px;
+    letter-spacing:.01em;
+  }
+  .stat-value small{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--chalk-dim);
+    display:block;
+    margin-top:2px;
+  }
+  .stats-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--chalk-dim);
+    margin-top:8px;
+    letter-spacing:.02em;
+  }
+  @media (max-width:480px){
+    .stats-grid{grid-template-columns:1fr;}
+  }
+
+  .final-score{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--chalk);
+    background:rgba(244,241,232,0.06);
+    border-radius:6px;
+    padding:3px 9px;
+    white-space:nowrap;
+  }
+  .check-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+  .check-item{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:6px;
+    border:1px solid var(--line);
+  }
+  .check-item .mark{font-size:13px;font-weight:700;line-height:1;}
+  .check-item.yes .mark{color:var(--pitch-light);}
+  .check-item.no .mark{color:var(--crimson);}
+  .check-item.neutral .mark{color:var(--chalk-dim);}
+  .pending{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--chalk-dim);
+    margin-top:12px;
+  }
+
+  /* TODAY/YESTERDAY PANEL */
+  .day-panel{
+    margin-top:30px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+    background:rgba(244,241,232,0.03);
+  }
+  .day-panel h2{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    font-size:19px;
+    letter-spacing:.01em;
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .day-panel h2::before{
+    content:"";
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--amber);
+    display:inline-block;
+  }
+  .day-group{margin-top:16px;}
+  .day-group:first-child{margin-top:0;}
+  .day-group-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--amber);
+    margin-bottom:8px;
+  }
+  .day-league{margin-bottom:12px;}
+  .day-league-name{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--chalk-dim);
+    margin-bottom:6px;
+  }
+  .day-matches{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  @media (max-width:520px){.day-matches{grid-template-columns:1fr;}}
+  .day-match{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:7px 10px;
+    font-size:13px;
+  }
+  .day-match .dm-score{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    color:var(--chalk);
+    background:rgba(244,241,232,0.06);
+    border-radius:4px;
+    padding:2px 7px;
+    margin:0 8px;
+    white-space:nowrap;
+  }
+  .day-match .dm-teams{color:var(--chalk-dim);flex:1;}
+  .day-match .dm-src{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    color:var(--chalk-dim);
+    opacity:.7;
+  }
+
+  /* RESULTS STRIP */
+  .results-strip{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding-bottom:6px;
+  }
+  .result-chip{
+    flex:0 0 auto;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    white-space:nowrap;
+    color:var(--chalk-dim);
+  }
+  .result-chip b{color:var(--chalk);}
+
+  /* METHODOLOGY */
+  .method{
+    margin-top:44px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px;
+    background:rgba(27,67,50,0.12);
+  }
+  .method h2{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    font-size:20px;
+    margin-bottom:12px;
+  }
+  .method ul{list-style:none;}
+  .method li{
+    display:flex;gap:10px;
+    font-size:13.5px;
+    color:var(--chalk-dim);
+    padding:8px 0;
+    border-top:1px solid var(--line);
+  }
+  .method li:first-of-type{border-top:none;}
+  .method li b{color:var(--chalk);min-width:150px;font-weight:600;}
+
+  footer{
+    margin-top:36px;
+    padding:18px 20px 0;
+    font-size:12px;
+    color:var(--chalk-dim);
+    text-align:center;
+  }
+  footer .warn{color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;margin-bottom:6px;}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Temporada 2026/27 — Rodada 1/2</div>
+    <h1>A Casa dos<br>Palpites</h1>
+    <p class="hero-sub">Dossiê da rodada: leitura dos próximos jogos de Premier League, La Liga, Serie A, Bundesliga, Ligue 1 e Primeira Liga, cruzando fator casa, modelo estatístico de probabilidade e estágio da temporada.</p>
+    <nav class="tabs" id="tabs"></nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="day-panel" id="day-panel"></div>
+  <div id="leagues"></div>
+
+  <div class="method">
+    <h2>Critérios usados na leitura</h2>
+    <ul>
+      <li><b>Modelo de probabilidade</b> Estimativa vitória mandante / empate / visitante gerada a partir do desempenho recente e força relativa dos elencos.</li>
+      <li><b>Fator casa</b> Mando de campo pesa historicamente a favor do time da casa — considerado no ajuste de cada confronto.</li>
+      <li><b>Estágio da temporada</b> Início de campeonato = amostra pequena de jogos. Palpites nas primeiras rodadas têm confiança reduzida por padrão.</li>
+      <li><b>Distância entre favoritos</b> Quanto maior o gap percentual entre o time favorito e o segundo colocado no confronto, maior a confiança do palpite.</li>
+      <li><b>Resultados recentes</b> Últimos jogos finalizados de cada liga somados como contexto, não como garantia.</li>
+      <li><b>Cobertura de dados</b> Premier League, La Liga, Serie A, Bundesliga e Ligue 1 têm modelo estatístico de probabilidade. Primeira Liga ainda não — mostramos os confrontos com leitura qualitativa, sem inventar percentuais.</li>
+      <li><b>Escanteios, cartões e over/under</b> Estimativas calculadas por heurística a partir do gap de probabilidade entre os times, não a partir de histórico real por equipe. Trate como referência aproximada, não como estatística oficial.</li>
+      <li><b>Sinais de acerto (✓/✗)</b> Depois que o jogo termina, cada mercado (resultado, escanteios, cartões, over/under) é comparado ao resultado real. Como esta página é estática, ela não busca resultados sozinha — peça uma atualização para preenchê-los.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <div class="warn">Uso informativo. Não é garantia de resultado — aposte com responsabilidade.</div>
+    Dados de jogos e probabilidades via provedor esportivo. Atualize a página para uma nova rodada.
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  epl: {
+    name: "Premier League",
+    results: [
+      {home:"ARS",away:"COV",score:"3–0"},
+      {home:"HUL",away:"MUN",score:"2–0"},
+      {home:"EVE",away:"CRY",score:"2–0"},
+      {home:"IPS",away:"SUN",score:"2–1"},
+      {home:"NFO",away:"LEE",score:"0–1"},
+      {home:"BRE",away:"TOT",score:"3–0"}
+    ],
+    upcoming: [
+      {home:"Brighton & Hove Albion",away:"Aston Villa",kickoff:"Dom 23/08, 14:00",p:{home:42.8,draw:26.9,away:30.3},actual:{home:4,away:0,cornersHome:5,cornersAway:2,cardsHome:2,cardsAway:3}},
+      {home:"Manchester City",away:"AFC Bournemouth",kickoff:"Dom 23/08, 14:00",p:{home:64.7,draw:19.0,away:16.3},actual:{home:2,away:1,cornersHome:8,cornersAway:3,cardsHome:1,cardsAway:2}},
+      {home:"Newcastle United",away:"Liverpool FC",kickoff:"Dom 23/08, 16:30",p:{home:25.0,draw:24.1,away:50.9},actual:{home:2,away:2,cornersHome:2,cornersAway:6,cardsHome:5,cardsAway:3}},
+      {home:"Fulham FC",away:"Chelsea FC",kickoff:"Seg 24/08, 20:00",p:{home:24.7,draw:24.3,away:51.0}},
+      {home:"Crystal Palace",away:"Manchester City",kickoff:"Sex 28/08, 20:00",p:{home:17.2,draw:22.1,away:60.7}},
+      {home:"Liverpool FC",away:"Nottingham Forest",kickoff:"Sáb 29/08, 12:30",p:{home:65.7,draw:19.6,away:14.7}},
+      {home:"Tottenham Hotspur",away:"Newcastle United",kickoff:"Sáb 29/08, 17:30",p:{home:44.1,draw:26.5,away:29.4}},
+      {home:"Chelsea FC",away:"Brighton & Hove Albion",kickoff:"Dom 30/08, 14:00",p:{home:49.3,draw:25.3,away:25.4}}
+    ]
+  },
+  la_liga: {
+    name: "La Liga",
+    results: [
+      {home:"SEV",away:"RVC",score:"2–1"},
+      {home:"ATH",away:"SEV",score:"1–3"},
+      {home:"VCF",away:"RCC",score:"0–0"},
+      {home:"ESP",away:"RMA",score:"1–2"},
+      {home:"RBB",away:"RSO",score:"1–0"}
+    ],
+    upcoming: [
+      {home:"Atlético de Madrid",away:"Villarreal CF",kickoff:"Dom 23/08, 16:00",p:{home:51.1,draw:25.9,away:23.0},actual:{home:2,away:2,cornersHome:5,cornersAway:3,cardsHome:3,cardsAway:2}},
+      {home:"Getafe CF",away:"Racing Santander",kickoff:"Dom 23/08, 18:30",p:{home:42.9,draw:32.3,away:24.8},actual:{home:1,away:0,cornersHome:8,cornersAway:6,cardsHome:1,cardsAway:3}},
+      {home:"Elche CF",away:"FC Barcelona",kickoff:"Dom 23/08, 20:30",p:{home:11.4,draw:16.0,away:72.6},actual:{home:0,away:5,cornersHome:3,cornersAway:1,cardsHome:1,cardsAway:0}},
+      {home:"CA Osasuna",away:"Levante UD",kickoff:"Seg 24/08, 18:30",p:{home:52.7,draw:26.3,away:21.0}},
+      {home:"Valencia CF",away:"Real Betis",kickoff:"Ter 25/08, 20:00",p:{home:35.6,draw:28.7,away:35.7}},
+      {home:"Real Madrid",away:"Real Sociedad",kickoff:"Qua 26/08, 20:00",p:{home:68.6,draw:18.0,away:13.4}},
+      {home:"FC Barcelona",away:"Athletic Bilbao",kickoff:"Qui 27/08, 20:00",p:{home:69.1,draw:17.8,away:13.1}}
+    ]
+  },
+  serie_a: {
+    name: "Serie A",
+    results: [
+      {home:"INT",away:"MON",score:"4–1"},
+      {home:"UDI",away:"COM",score:"1–1"},
+      {home:"GEN",away:"NAP",score:"0–2"},
+      {home:"PAR",away:"CAG",score:"0–1"}
+    ],
+    upcoming: [
+      {home:"Frosinone Calcio",away:"Juventus",kickoff:"Dom 23/08, 17:30",p:{home:13.6,draw:20.8,away:65.6},actual:{home:0,away:1,cornersHome:3,cornersAway:12,cardsHome:2,cardsAway:2}},
+      {home:"Venezia FC",away:"US Lecce",kickoff:"Dom 23/08, 17:30",p:{home:42.8,draw:30.6,away:26.6},actual:{home:0,away:2,cornersHome:5,cornersAway:3,cardsHome:1,cardsAway:3}},
+      {home:"Atalanta BC",away:"Sassuolo",kickoff:"Dom 23/08, 19:45",p:{home:62.6,draw:21.2,away:16.2},actual:{home:2,away:1,cornersHome:4,cornersAway:4,cardsHome:0,cardsAway:0}},
+      {home:"Torino FC",away:"AC Milan",kickoff:"Dom 23/08, 19:45",p:{home:21.3,draw:26.0,away:52.7},actual:{home:1,away:2,cornersHome:2,cornersAway:4,cardsHome:0,cardsAway:1}},
+      {home:"Bologna FC",away:"Lazio",kickoff:"Seg 24/08, 17:30",p:{home:43.7,draw:29.6,away:26.7}},
+      {home:"AS Roma",away:"Fiorentina",kickoff:"Seg 24/08, 19:45",p:{home:59.1,draw:23.5,away:17.4}}
+    ]
+  },
+  bundesliga: {
+    name: "Bundesliga",
+    results: [],
+    upcoming: [
+      {home:"Bayern de Munique",away:"VfB Stuttgart",kickoff:"Sex 28/08, 19:30",p:{home:74.7,draw:13.9,away:11.4}},
+      {home:"RB Leipzig",away:"Borussia M'gladbach",kickoff:"Sáb 29/08, 14:30",p:{home:62.1,draw:20.4,away:17.5}},
+      {home:"Mainz 05",away:"Paderborn",kickoff:"Sáb 29/08, 14:30",p:{home:56.5,draw:23.5,away:20.0}},
+      {home:"Union Berlin",away:"Eintracht Frankfurt",kickoff:"Sáb 29/08, 14:30",p:{home:38.6,draw:26.6,away:34.8}},
+      {home:"1. FC Köln",away:"TSG Hoffenheim",kickoff:"Sáb 29/08, 14:30",p:{home:32.7,draw:26.1,away:41.2}},
+      {home:"Elversberg",away:"Bayer Leverkusen",kickoff:"Sáb 29/08, 14:30",p:{home:18.0,draw:20.1,away:61.9}},
+      {home:"Borussia Dortmund",away:"Hamburger SV",kickoff:"Sáb 29/08, 17:30",p:{home:72.0,draw:16.7,away:11.3}},
+      {home:"SC Freiburg",away:"Werder Bremen",kickoff:"Dom 30/08, 14:30",p:{home:46.3,draw:27.0,away:26.7}},
+      {home:"FC Augsburg",away:"Schalke 04",kickoff:"Dom 30/08, 16:30",p:{home:43.7,draw:25.6,away:30.7}}
+    ]
+  },
+  ligue_1: {
+    name: "Ligue 1",
+    results: [
+      {home:"OLM",away:"RCS",score:"4–0"},
+      {home:"RCL",away:"AUX",score:"5–2"},
+      {home:"MAN",away:"STB",score:"2–2"},
+      {home:"NIC",away:"FCL",score:"0–0"},
+      {home:"TFC",away:"OL",score:"0–2"},
+      {home:"EST",away:"PAR",score:"0–0"}
+    ],
+    upcoming: [
+      {home:"Angers SCO",away:"Lille OSC",kickoff:"Dom 23/08, 14:00",p:{home:19.0,draw:25.3,away:55.7},actual:{home:0,away:2,cornersHome:8,cornersAway:3,cardsHome:2,cardsAway:2}},
+      {home:"Le Havre AC",away:"AS Monaco",kickoff:"Dom 23/08, 16:15",p:{home:26.0,draw:24.5,away:49.5},actual:{home:0,away:1,cornersHome:7,cornersAway:4,cardsHome:3,cardsAway:2}},
+      {home:"Stade Rennais",away:"Paris Saint-Germain",kickoff:"Dom 23/08, 19:45",p:{home:17.5,draw:19.5,away:63.0},actual:{home:2,away:2,cornersHome:0,cornersAway:10,cardsHome:2,cardsAway:2}},
+      {home:"Lille OSC",away:"Paris Saint-Germain",kickoff:"Sex 28/08, 19:45"},
+      {home:"Strasbourg",away:"Racing Club de Lens",kickoff:"Sáb 29/08, 16:15"},
+      {home:"AJ Auxerre",away:"Angers SCO",kickoff:"Sáb 29/08, 19:45"},
+      {home:"Stade Brest",away:"Toulouse FC",kickoff:"Sáb 29/08, 19:45"},
+      {home:"FC Lorient",away:"ESTAC Troyes",kickoff:"Sáb 29/08, 19:45"},
+      {home:"Olympique Lyon",away:"Le Havre AC",kickoff:"Sáb 29/08, 19:45"}
+    ]
+  },
+  primeira_liga: {
+    name: "Primeira Liga",
+    noModel: true,
+    results: [],
+    upcoming: [
+      {home:"Marítimo",away:"Académico de Viseu",kickoff:"Sáb 22/08, 15:30", note:"Marítimo entra em casa após vitória na rodada 1; Viseu tenta a primeira fora."},
+      {home:"Estoril Praia",away:"Rio Ave",kickoff:"Sáb 22/08, 18:00", note:"Confronto equilibrado entre equipas de meio de tabela na temporada passada."},
+      {home:"Sporting CP",away:"Alverca",kickoff:"Sáb 22/08, 20:30", note:"Sporting, campeão em título, joga em Alvalade com favoritismo claro pelo elenco e mando de campo."},
+      {home:"Vitória de Guimarães",away:"CD Nacional",kickoff:"Dom 23/08, 15:30", note:"Guimarães busca reagir em casa após início de temporada."},
+      {home:"Santa Clara",away:"Famalicão",kickoff:"Dom 23/08, 18:00", note:"Jogo aberto entre equipas de meio-tabela; mando de campo pode pesar no desempate."},
+      {home:"FC Porto",away:"Arouca",kickoff:"Dom 23/08, 20:30", note:"FC Porto ainda sem sofrer golos na temporada; favorito claro em casa."},
+      {home:"Gil Vicente",away:"Casa Pia",kickoff:"Seg 24/08, 20:15", note:"Confronto direto de equipas que buscam somar pontos fora da zona de risco."}
+    ]
+  }
+};
+
+function pickFor(p){
+  const entries = [["Casa",p.home,"home"],["Empate",p.draw,"draw"],["Fora",p.away,"away"]];
+  entries.sort((a,b)=>b[1]-a[1]);
+  const gap = entries[0][1] - entries[1][1];
+  let conf = "baixa";
+  if(gap >= 25) conf = "alta";
+  else if(gap >= 12) conf = "media";
+  return {label:entries[0][0], value:entries[0][1], type:entries[0][2], gap, conf};
+}
+
+function confText(conf){
+  return {alta:"Confiança alta", media:"Confiança média", baixa:"Confiança baixa"}[conf];
+}
+
+// Heuristic estimates for corners / cards / over-under, derived from the win-probability
+// gap between the two sides. NOT sourced from real historical corner/card data per team —
+// clearly labeled as an estimate in the UI.
+function statsEstimate(m, pick){
+  const gap = pick.gap;
+
+  let totalCorners = Math.round(9 + gap/20);
+  totalCorners = Math.min(12, Math.max(8, totalCorners));
+  let homeRatio = 0.5 + (m.p.home - m.p.away) / 250;
+  homeRatio = Math.min(0.68, Math.max(0.32, homeRatio));
+  const homeCorners = Math.round(totalCorners * homeRatio);
+  const awayCorners = totalCorners - homeCorners;
+
+  let totalCards = gap >= 25 ? 5 : 4;
+  const underdogIsHome = m.p.home < m.p.away;
+  const cardsHome = underdogIsHome ? Math.ceil(totalCards*0.55) : Math.floor(totalCards*0.45);
+  const cardsAway = totalCards - cardsHome;
+
+  let ou = "Linha equilibrada (~2.5 gols)";
+  if(m.p.draw < 20 && gap >= 25) ou = "Tendência Over 2.5 gols";
+  else if(m.p.draw >= 26 && gap < 15) ou = "Tendência Under 2.5 gols";
+
+  return {homeCorners, awayCorners, totalCorners, cardsHome, cardsAway, totalCards, ou};
+}
+
+// Compares a match's prediction against its real final result (once known) across
+// every market: 1x2, corners, cards, over/under. Returns null while actual==null (pending).
+function checkResult(m, pick, stats){
+  if(!m.actual) return null;
+  const a = m.actual;
+  const outcome = a.home > a.away ? "home" : (a.home < a.away ? "away" : "draw");
+  const resultOk = outcome === pick.type;
+
+  let cornersOk = null;
+  if(a.cornersHome != null && a.cornersAway != null && a.cornersHome !== a.cornersAway){
+    cornersOk = (a.cornersHome > a.cornersAway) === (stats.homeCorners > stats.awayCorners);
+  }
+
+  let cardsOk = null;
+  if(a.cardsHome != null && a.cardsAway != null && a.cardsHome !== a.cardsAway){
+    cardsOk = (a.cardsHome > a.cardsAway) === (stats.cardsHome > stats.cardsAway);
+  }
+
+  let goalsOk = null;
+  const totalGoals = a.home + a.away;
+  if(stats.ou.indexOf("Over") > -1) goalsOk = totalGoals > 2.5;
+  else if(stats.ou.indexOf("Under") > -1) goalsOk = totalGoals < 2.5;
+
+  return {resultOk, cornersOk, cardsOk, goalsOk, score:`${a.home}–${a.away}`};
+}
+
+function checkChip(label, ok){
+  if(ok === null) return `<div class="check-item neutral"><span class="mark">–</span>${label}</div>`;
+  return ok
+    ? `<div class="check-item yes"><span class="mark">✓</span>${label}</div>`
+    : `<div class="check-item no"><span class="mark">✗</span>${label}</div>`;
+}
+
+function readingText(m, pick){
+  const favHome = pick.type === "home";
+  const favAway = pick.type === "away";
+  let txt = "";
+  if(favHome) txt = `<b>${m.home}</b> entra favorecido pelo mando de campo e pela força relativa diante do ${m.away}.`;
+  else if(favAway) txt = `Mesmo fora de casa, o <b>${m.away}</b> aparece como favorito diante do ${m.home} — sinal de diferença clara de nível.`;
+  else txt = `Jogo equilibrado entre <b>${m.home}</b> e <b>${m.away}</b>; o empate divide espaço com os dois resultados de vitória.`;
+  if(pick.gap < 12) txt += ` A margem entre os desfechos é curta, então trate o palpite como indicativo, não como certeza.`;
+  return txt;
+}
+
+const tabsEl = document.getElementById("tabs");
+const leaguesEl = document.getElementById("leagues");
+const keys = Object.keys(DATA);
+
+// Games actually completed today (22/08) and yesterday (21/08), across all leagues.
+// Sourced from live scores where available (EPL, La Liga, Serie A, Ligue 1). Primeira Liga
+// isn't in that feed, so the Sporting–Alverca result below comes from press coverage.
+const PLAYED = {
+  hoje: {},
+  ontem: {
+    "Premier League": [
+      {teams:"Brighton & Hove Albion vs Aston Villa", score:"4–0"},
+      {teams:"Manchester City vs AFC Bournemouth", score:"2–1"},
+      {teams:"Newcastle United vs Liverpool FC", score:"2–2"}
+    ],
+    "La Liga": [
+      {teams:"Atlético de Madrid vs Villarreal CF", score:"2–2"},
+      {teams:"Getafe CF vs Racing Santander", score:"1–0"},
+      {teams:"Elche CF vs FC Barcelona", score:"0–5"}
+    ],
+    "Serie A": [
+      {teams:"Frosinone vs Juventus", score:"0–1"},
+      {teams:"Venezia vs US Lecce", score:"0–2"},
+      {teams:"Atalanta vs Sassuolo", score:"2–1"},
+      {teams:"Torino vs AC Milan", score:"1–2"}
+    ],
+    "Ligue 1": [
+      {teams:"Angers SCO vs Lille OSC", score:"0–2"},
+      {teams:"Le Havre AC vs AS Monaco", score:"0–1"},
+      {teams:"Stade Rennais vs Paris Saint-Germain", score:"2–2"}
+    ]
+  }
+};
+
+function renderDayPanel(){
+  const el = document.getElementById("day-panel");
+  let html = `<h2>Jogos realizados — hoje e ontem</h2>`;
+  ["hoje","ontem"].forEach(dayKey=>{
+    const dayData = PLAYED[dayKey];
+    const leagueNames = Object.keys(dayData);
+    if(!leagueNames.length){
+      if(dayKey === "hoje"){
+        html += `<div class="day-group"><div class="day-group-label">Hoje · 24/08</div><div class="pending">Nenhum jogo terminou ainda hoje.</div></div>`;
+      }
+      return;
+    }
+    html += `<div class="day-group"><div class="day-group-label">${dayKey === "hoje" ? "Hoje · 24/08" : "Ontem · 23/08"}</div>`;
+    leagueNames.forEach(lg=>{
+      html += `<div class="day-league"><div class="day-league-name">${lg}</div><div class="day-matches">`;
+      dayData[lg].forEach(m=>{
+        html += `<div class="day-match"><span class="dm-teams">${m.teams}</span><span class="dm-score">${m.score}</span>${m.src ? `<span class="dm-src">${m.src}</span>` : ""}</div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+renderDayPanel();
+
+keys.forEach((key,i)=>{
+  const btn = document.createElement("button");
+  btn.textContent = DATA[key].name;
+  btn.className = i===0 ? "active" : "";
+  btn.onclick = ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll("section.league").forEach(s=>s.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("sec-"+key).classList.add("active");
+  };
+  tabsEl.appendChild(btn);
+
+  const sec = document.createElement("section");
+  sec.className = "league" + (i===0 ? " active" : "");
+  sec.id = "sec-"+key;
+
+  let html = "";
+
+  if(DATA[key].results.length){
+    html += `<div class="section-label">Últimos resultados</div><div class="results-strip">`;
+    DATA[key].results.forEach(r=>{
+      html += `<div class="result-chip">${r.home} <b>${r.score}</b> ${r.away}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div class="section-label">Próximos jogos — leitura e palpite</div>`;
+  DATA[key].upcoming.forEach(m=>{
+    if(!m.p){
+      // No statistical model available for this fixture — show fixture + qualitative note only, no invented numbers.
+      html += `
+      <div class="card">
+        <div class="card-top">
+          <div class="teams">${m.home}<span class="vs">vs</span>${m.away}</div>
+          <div class="kickoff">${m.kickoff}</div>
+        </div>
+        <div class="badge baixa">Sem modelo estatístico disponível</div>
+        <div class="reading">${m.note ? m.note : "Confronto ainda sem dados suficientes para uma leitura probabilística. Acompanhe escalações e forma recente perto do jogo."}</div>
+      </div>`;
+      return;
+    }
+    const pick = pickFor(m.p);
+    const stats = statsEstimate(m, pick);
+    const check = checkResult(m, pick, stats);
+    html += `
+    <div class="card">
+      <div class="card-top">
+        <div class="teams">${m.home}<span class="vs">vs</span>${m.away}</div>
+        ${check ? `<div class="final-score">Final ${check.score}</div>` : `<div class="kickoff">${m.kickoff}</div>`}
+      </div>
+      <div class="badge ${pick.conf}">Palpite: ${pick.label} · ${confText(pick.conf)}</div>
+      <div class="meter">
+        <div class="meter-track">
+          <div class="meter-seg home" style="width:${m.p.home}%"></div>
+          <div class="meter-seg draw" style="width:${m.p.draw}%"></div>
+          <div class="meter-seg away" style="width:${m.p.away}%"></div>
+          <div class="meter-ball" style="left:${pick.type==='home' ? m.p.home/2 : pick.type==='draw' ? m.p.home + m.p.draw/2 : m.p.home + m.p.draw + m.p.away/2}%"></div>
+        </div>
+        <div class="meter-labels">
+          <span>Casa <b>${m.p.home.toFixed(1)}%</b></span>
+          <span>Empate <b>${m.p.draw.toFixed(1)}%</b></span>
+          <span>Fora <b>${m.p.away.toFixed(1)}%</b></span>
+        </div>
+      </div>
+      <div class="reading">${readingText(m, pick)}</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Escanteios (estim.)</span>
+          <span class="stat-value">${stats.homeCorners} – ${stats.awayCorners}<small>total ~${stats.totalCorners}</small></span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Cartões amarelos (estim.)</span>
+          <span class="stat-value">${stats.cardsHome} – ${stats.cardsAway}<small>total ~${stats.totalCards}</small></span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Gols (over/under)</span>
+          <span class="stat-value">${stats.ou}</span>
+        </div>
+      </div>
+      <div class="stats-note">Estimativa heurística a partir do modelo de resultado — não é histórico real de escanteios/cartões por equipe.</div>
+      ${check
+        ? `<div class="check-row">
+            ${checkChip("Resultado", check.resultOk)}
+            ${checkChip("Escanteios", check.cornersOk)}
+            ${checkChip("Cartões", check.cardsOk)}
+            ${checkChip("Over/Under", check.goalsOk)}
+          </div>`
+        : `<div class="pending">Jogo ainda não terminou — sinais de acerto aparecem aqui após o apito final.</div>`
+      }
+    </div>`;
+  });
+
+  sec.innerHTML = html;
+  leaguesEl.appendChild(sec);
+});
+</script>
+
+</body>
+</html>
